@@ -25,7 +25,7 @@
   typedef struct pollfd WSAPOLLFD;  /* Missing in MinGW */
 #endif
 
-#include <MSWSock.h>
+#include <mswsock.h>
 
 #define ADD_VALUE(v)  { v, #v }
 
