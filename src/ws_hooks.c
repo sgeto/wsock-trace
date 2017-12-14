@@ -2,7 +2,7 @@
 #error "Include this file in wsock_trace.c only."
 #endif
 
-#include <MSWSock.h>
+#include <mswsock.h>
 
 /* We need to have all these GUIDs defined to compile this.
  */
