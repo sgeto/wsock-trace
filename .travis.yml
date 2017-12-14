@@ -1,0 +1,61 @@
+# See YAML format https://en.wikipedia.org/wiki/YAML
+# See Travis CI (Continuous Integration) https://docs.travis-ci.com/
+
+
+language: c
+# Only build the master and travis branches
+branches:
+  only:
+  - master
+  - travis
+
+env:
+  - PLATFORM="mingw32" ARCH="x86_64" BITSIZE=64 HOST="x86_64-w64-mingw32"
+  - PLATFORM="mingw32" ARCH="i686" BITSIZE=32 HOST="i686-w64-mingw32"
+
+addons:
+  apt:
+    packages:
+      - mingw-w64
+
+before_script:
+  - export CC=$ARCH-w64-mingw32-gcc
+  - export GNUMAKEFLAGS='--jobs --environment-overrides --warn-undefined-variables'
+  - export CFLAGS='-Wall --coverage'
+script:
+  - cd src
+  - make -f Makefile.MingW VERBOSE=1 > build.log 2>&1 || (cat build.log && exit 1)
+  # - sudo make test
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
+before_deploy: echo 'ready?'
+
+deploy:
+# Don't delete build artifacts
+  skip_cleanup: true
+# GitHub Releases works only for tags, not for branches!
+  provider: releases
+  api_key:
+    secure: tS2Xqo/H4LZo2iI0Ow8ckqbJPRi56Yzk3xvBIrDto2Lu9kLawNpJj+C5NGeHlq2dIjg7syVVfjPk+5HLTsHsK4CPzjIggxsqRWRj0GkO0Wpw03pQuM1zpFmgJBo1vn7roGYJKmYwiEL81ts3Cc8UoBEXAOyR8LGYGYTP8AAZPqYLttfiZABBoBU+3mOetlI5iknKvhm/1oUSsP87yEIgBbdccWXXtSNUCrjudFl4+ypvQhXufLZE63h+R29OeVDYYw7LUWU59TPT4tTHYaopHB2D9TRT1PDLQ01IK3rGwhRzkr6FmQBJDdnki4v2V+uVcdgveJmkkorKg53fOGFdMiahipkRQo6RECQdehw2xMLsZlTZfL6mGCZAX9/7vs+qeXwWjmy1VWihuQCE5Ds4R3BeVAhV4zqcRlFNgYm2INm2kSJTW1rLDaS0uD5/dDhOC1OPATPsLJcdyiJ5LppkOrgMHD809ETP0KSmweXZsmx/sHISXrFvPF/O5r5eGxIyYfFce9hm0UDm7EoUIPH2j0FWp9pxCx0UKDRsKE8285XLB25C/3RPDXLpzja0xzEBUshnVTCP2jO9bwTTJCtJSufr/0FkWJo6XA9xVwSm11UMnhu1ZfXIuCZrAW/kKhFZcaqC6pGVJ9jJvEPABHARJXPNXMKtOBJps9nV3PvWEnI=
+# enable wildcards
+  file_glob: true
+  file:
+    - "example.*.tar.gz"
+    - "example-1.*.zip"
+  on:
+    tags: true
+    repo: gvanem/wsock-trace
+
+notifications:
+# Pull Request builds do not trigger email notifications.
+  email:
+    recipients:
+    - autostart.ini@gmail
+    template:
+      - "wsock-trace %{build_number} (%{commit} by %{author}): %{message}"
+      - "See details at %{build_url}"
+# change: send a notification when the build status changes (default)
+    on_success: change
+    on_failure: always
